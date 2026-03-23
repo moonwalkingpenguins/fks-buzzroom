@@ -17,6 +17,12 @@ export default function NewQuizPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error || 'Gagal membuat quiz')
+      setLoading(false)
+      return
+    }
     const quiz = await res.json()
     setQuizId(quiz.id)
     setLoading(false)
@@ -32,6 +38,11 @@ export default function NewQuizPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(question),
     })
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error || 'Gagal menambahkan soal')
+      return
+    }
     const q = await res.json()
     setQuestions(prev => [...prev, { id: q.id, content: q.content }])
   }

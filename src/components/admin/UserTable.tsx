@@ -29,8 +29,10 @@ export function UserTable({ users, onBonus, onToggleActive }: UserTableProps) {
 
   async function handleBonus() {
     if (!bonusDialog) return
+    const amount = parseInt(bonusAmount, 10)
+    if (isNaN(amount) || amount <= 0) return
     setLoading(true)
-    await onBonus(bonusDialog.id, parseInt(bonusAmount), bonusReason)
+    await onBonus(bonusDialog.id, amount, bonusReason)
     setBonusDialog(null)
     setBonusAmount('')
     setBonusReason('')

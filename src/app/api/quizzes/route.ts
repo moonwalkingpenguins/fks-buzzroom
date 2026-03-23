@@ -1,10 +1,10 @@
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireAuth()
+  if (error) return error
 
   const quizzes = await prisma.quiz.findMany({
     where: { isArchived: false },
@@ -15,8 +15,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireAuth('admin')
+  if (error) return error
 
   const body = await req.json()
   const { title, description, category } = body
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       title: title.trim(),
       description: description?.trim() || null,
       category: category?.trim() || null,
-      createdById: session.user.id,
+      createdById: session!.user.id,
     },
   })
   return NextResponse.json(quiz, { status: 201 })

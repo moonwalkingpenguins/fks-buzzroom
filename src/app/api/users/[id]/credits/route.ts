@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -6,14 +6,14 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { session, error } = await requireAuth('admin')
+  if (error) return error
 
   const { id } = await params
   const { amount, reason } = await req.json()
 
-  if (!amount || amount <= 0) {
-    return NextResponse.json({ error: 'Jumlah kredit harus positif' }, { status: 400 })
+  if (!amount || !Number.isInteger(amount) || amount <= 0) {
+    return NextResponse.json({ error: 'Jumlah kredit harus bilangan bulat positif' }, { status: 400 })
   }
   if (!reason?.trim()) {
     return NextResponse.json({ error: 'Alasan bonus wajib diisi' }, { status: 400 })
@@ -31,7 +31,7 @@ export async function POST(
         amount,
         type: 'admin_bonus',
         reason: reason.trim(),
-        adminId: session.user.id,
+        adminId: session!.user.id,
       },
     }),
   ])
