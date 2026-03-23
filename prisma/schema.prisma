@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  super_admin
+  admin
+  player
+}
+
+enum SessionMode {
+  standard
+  team_vs_team
+  hot_seat
+}
+
+enum SessionStatus {
+  created
+  lobby
+  in_progress
+  between_questions
+  finished
+  aborted
+}
+
+enum JoinMode {
+  guest
+  identified
+}
+
+enum TransactionType {
+  session_reward
+  admin_bonus
+  claim_reserve
+  claim_deduct
+  claim_release
+}
+
+enum ClaimStatus {
+  pending
+  approved
+  rejected
+}
+
+enum QuestionType {
+  multiple_choice
+  true_false
+  puzzle
+}
+
+model User {
+  id               String   @id @default(cuid())
+  name             String
+  employeeCode     String?  @unique
+  email            String?  @unique
+  passwordHash     String?
+  role             Role     @default(player)
+  creditsBalance   Int      @default(0)
+  creditsReserved  Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  hostedSessions   GameSession[]       @relation("HostedSessions")
+  sessionPlayers   SessionPlayer[]
+  creditTx         CreditTransaction[]
+  rewardClaims     RewardClaim[]
+  onboarding       UserOnboarding?
+  adminActions     CreditTransaction[] @relation("AdminActions")
+  adminClaims      RewardClaim[]       @relation("AdminClaims")
+  quizzes          Quiz[]
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String?
+  isTemplate  Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  questions   Question[]
+  sessions    GameSession[]
+}
+
+model Question {
+  id           String       @id @default(cuid())
+  quizId       String
+  quiz         Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type         QuestionType @default(multiple_choice)
+  content      String
+  imageUrl     String?
+  durationSecs Int          @default(20)
+  orderIndex   Int
+  explanation  String?
+  options      QuestionOption[]
+  answers      Answer[]
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content    String
+  isCorrect  Boolean  @default(false)
+  orderIndex Int
+  answers    Answer[]
+}
+
+model GameSession {
+  id                   String        @id @default(cuid())
+  quizId               String
+  quiz                 Quiz          @relation(fields: [quizId], references: [id])
+  hostId               String
+  host                 User          @relation("HostedSessions", fields: [hostId], references: [id])
+  mode                 SessionMode   @default(standard)
+  pin                  String        @unique
+  status               SessionStatus @default(created)
+  currentQuestionIndex Int           @default(0)
+  startedAt            DateTime?
+  endedAt              DateTime?
+  createdAt            DateTime      @default(now())
+
+  teams     SessionTeam[]
+  players   SessionPlayer[]
+  answers   Answer[]
+  creditTx  CreditTransaction[]
+}
+
+model SessionTeam {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  color     String
+  members   SessionTeamMember[]
+}
+
+model SessionTeamMember {
+  id     String      @id @default(cuid())
+  teamId String
+  team   SessionTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+model SessionPlayer {
+  id          String      @id @default(cuid())
+  sessionId   String
+  session     GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  guestName   String?
+  joinMode    JoinMode    @default(guest)
+  teamId      String?
+  totalScore  Int         @default(0)
+  streakCount Int         @default(0)
+  finalRank   Int?
+  joinedAt    DateTime    @default(now())
+  answers     Answer[]
+}
+
+model Answer {
+  id               String          @id @default(cuid())
+  sessionId        String
+  session          GameSession     @relation(fields: [sessionId], references: [id])
+  questionId       String
+  question         Question        @relation(fields: [questionId], references: [id])
+  playerId         String
+  player           SessionPlayer   @relation(fields: [playerId], references: [id])
+  selectedOptionId String?
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  isCorrect        Boolean         @default(false)
+  score            Int             @default(0)
+  timeTakenMs      Int             @default(0)
+  answeredAt       DateTime        @default(now())
+}
+
+model CreditTransaction {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  amount    Int
+  type      TransactionType
+  reason    String
+  sessionId String?
+  session   GameSession?    @relation(fields: [sessionId], references: [id])
+  adminId   String?
+  admin     User?           @relation("AdminActions", fields: [adminId], references: [id])
+  claimId   String?
+  createdAt DateTime        @default(now())
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  creditCost  Int
+  stock       Int      @default(-1)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  claims      RewardClaim[]
+}
+
+model RewardClaim {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  rewardId     String
+  reward       Reward      @relation(fields: [rewardId], references: [id])
+  creditsSpent Int
+  status       ClaimStatus @default(pending)
+  adminId      String?
+  admin        User?       @relation("AdminClaims", fields: [adminId], references: [id])
+  adminNote    String?
+  claimedAt    DateTime    @default(now())
+  processedAt  DateTime?
+}
+
+model UserOnboarding {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id])
+  stepPlayerDone   Boolean @default(false)
+  stepQuizCreated  Boolean @default(false)
+  stepPreviewDone  Boolean @default(false)
+  stepSessionDone  Boolean @default(false)
+}
