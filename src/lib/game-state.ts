@@ -41,6 +41,12 @@ export function deleteGameState(sessionId: string): void {
   sessions.delete(sessionId)
 }
 
+export function removePlayerFromAllSessions(socketId: string): void {
+  for (const state of sessions.values()) {
+    state.players.delete(socketId)
+  }
+}
+
 export function getLeaderboard(state: GameState) {
   return Array.from(state.players.values())
     .sort((a, b) => b.score - a.score)

@@ -22,7 +22,7 @@ export function useTimer(durationSecs: number, onExpire?: () => void) {
     return () => clearInterval(intervalRef.current!)
   }, [durationSecs])
 
-  const progress = remaining / durationSecs
+  const progress = durationSecs > 0 ? remaining / durationSecs : 1
 
   return { remaining, progress }
 }

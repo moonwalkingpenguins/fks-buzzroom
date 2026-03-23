@@ -12,7 +12,7 @@ export function initSocket(httpServer: HTTPServer): SocketIOServer {
   if (io) return io
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.AUTH_URL || 'http://localhost:3000',
+      origin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
       methods: ['GET', 'POST'],
     },
     path: '/api/socket',

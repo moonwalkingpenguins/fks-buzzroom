@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import { getGameState, createGameState, getLeaderboard } from './game-state'
+import { getGameState, createGameState, getLeaderboard, removePlayerFromAllSessions } from './game-state'
 import { prisma } from './prisma'
 
 export function registerSocketHandlers(io: Server): void {
@@ -52,10 +52,14 @@ export function registerSocketHandlers(io: Server): void {
           }
         }
 
-        // Create or find session player
-        let player = await prisma.sessionPlayer.findFirst({
-          where: { sessionId: session.id, ...(userId ? { userId } : { guestName: displayName }) },
-        })
+        // Find existing player — for identified users, match by userId in this session
+        // For guests, always create a new record per connection (socket.id)
+        let player = null
+        if (joinMode === 'identified' && userId) {
+          player = await prisma.sessionPlayer.findFirst({
+            where: { sessionId: session.id, userId },
+          })
+        }
 
         if (!player) {
           player = await prisma.sessionPlayer.create({
@@ -101,7 +105,8 @@ export function registerSocketHandlers(io: Server): void {
       }
     })
 
-    // HOST JOIN (to receive player_joined events)
+    // HOST JOIN (to receive host-only events)
+    // TODO(Task 10): Verify socket.data.userId matches session.hostId before joining host room
     socket.on('host_join', (data: { sessionId: string }) => {
       socket.join(data.sessionId)
       socket.join(`host-${data.sessionId}`)
@@ -109,7 +114,9 @@ export function registerSocketHandlers(io: Server): void {
 
     // DISCONNECT
     socket.on('disconnect', () => {
-      // Players remain in state — they may reconnect
+      // Remove player from in-memory state on disconnect
+      // They may rejoin; the DB record is preserved for reconnect
+      removePlayerFromAllSessions(socket.id)
     })
   })
 }
