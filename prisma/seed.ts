@@ -4,7 +4,12 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  const passwordHash = await bcrypt.hash('admin123', 12)
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD
+  if (!adminPassword) {
+    console.error('Error: SEED_ADMIN_PASSWORD environment variable is required')
+    process.exit(1)
+  }
+  const passwordHash = await bcrypt.hash(adminPassword, 12)
   const admin = await prisma.user.upsert({
     where: { employeeCode: 'ADMIN-001' },
     update: {},

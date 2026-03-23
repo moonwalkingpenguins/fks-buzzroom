@@ -72,6 +72,7 @@ model User {
   adminActions     CreditTransaction[] @relation("AdminActions")
   adminClaims      RewardClaim[]       @relation("AdminClaims")
   quizzes          Quiz[]
+  teamMemberships  SessionTeamMember[]
 }
 
 model Quiz {
@@ -146,6 +147,7 @@ model SessionTeamMember {
   teamId String
   team   SessionTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
   userId String
+  user   User        @relation(fields: [userId], references: [id])
 }
 
 model SessionPlayer {
@@ -162,6 +164,8 @@ model SessionPlayer {
   finalRank   Int?
   joinedAt    DateTime    @default(now())
   answers     Answer[]
+
+  @@unique([sessionId, userId])
 }
 
 model Answer {
@@ -178,6 +182,9 @@ model Answer {
   score            Int             @default(0)
   timeTakenMs      Int             @default(0)
   answeredAt       DateTime        @default(now())
+
+  @@index([sessionId, playerId])
+  @@index([sessionId, questionId])
 }
 
 model CreditTransaction {
@@ -223,11 +230,12 @@ model RewardClaim {
 }
 
 model UserOnboarding {
-  id               String  @id @default(cuid())
-  userId           String  @unique
-  user             User    @relation(fields: [userId], references: [id])
-  stepPlayerDone   Boolean @default(false)
-  stepQuizCreated  Boolean @default(false)
-  stepPreviewDone  Boolean @default(false)
-  stepSessionDone  Boolean @default(false)
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  stepPlayerDone   Boolean  @default(false)
+  stepQuizCreated  Boolean  @default(false)
+  stepPreviewDone  Boolean  @default(false)
+  stepSessionDone  Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
 }

@@ -1,10 +1,12 @@
 'use client'
 import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [code, setCode] = useState('')
   const [pass, setPass] = useState('')
   const [error, setError] = useState('')
@@ -23,7 +25,8 @@ export default function LoginPage() {
       setError('Kode karyawan atau password salah')
       setLoading(false)
     } else {
-      window.location.href = '/dashboard'
+      router.push('/dashboard')
+      router.refresh()
     }
   }
 
@@ -41,7 +44,8 @@ export default function LoginPage() {
           <Input
             placeholder="Kode Karyawan (misal: FKS-0023)"
             value={code}
-            onChange={e => setCode(e.target.value)}
+            onChange={e => { setCode(e.target.value); setError('') }}
+            autoComplete="username"
             className="bg-[#1C1C22] border-[#2E2E33] text-white placeholder:text-[#52525B]"
             required
           />
@@ -49,7 +53,8 @@ export default function LoginPage() {
             type="password"
             placeholder="Password"
             value={pass}
-            onChange={e => setPass(e.target.value)}
+            onChange={e => { setPass(e.target.value); setError('') }}
+            autoComplete="current-password"
             className="bg-[#1C1C22] border-[#2E2E33] text-white placeholder:text-[#52525B]"
             required
           />
