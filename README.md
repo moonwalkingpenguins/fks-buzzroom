@@ -1,57 +1,36 @@
-# ⚡ FKS BuzzRoom
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-> Platform kuis live on-premise untuk pelatihan internal perusahaan
->
-> **"Training yang seru. Belajar yang membekas."**
+## Getting Started
 
----
+First, run the development server:
 
-## Tentang Proyek
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-FKS BuzzRoom adalah platform kuis live berbasis web yang dirancang untuk pelatihan internal perusahaan. Dijalankan sepenuhnya on-premise — data karyawan tidak keluar dari server perusahaan.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Diferensiasi vs Kahoot
-- 🏢 **On-premise** — deploy di server sendiri, data tetap internal
-- 🎯 **Dual join mode** — main sebagai Tamu (langsung main) atau Karyawan (dapat kredit & reward)
-- 🏆 **Reward catalog** — kredit bisa ditukar hadiah nyata
-- 👥 **Mode Tim vs Tim** — kompetisi antar divisi
-- 🔥 **Hot Seat mode** — 1 vs semua, drama tinggi
-- 📖 **Replay soal salah** — nilai edukasi setelah game selesai
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Fitur Utama
-- Live quiz dengan leaderboard real-time
-- 3 mode game: Standard, Tim vs Tim, Hot Seat
-- Tipe soal: Pilihan Ganda, True/False, Puzzle
-- Sistem kredit + reward catalog
-- Template quiz siap pakai
-- Quick create & preview mode
-- Dashboard satu halaman
-- Onboarding 3 langkah untuk admin & peserta
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
----
+## Learn More
 
-## Stack
+To learn more about Next.js, take a look at the following resources:
 
-- **Framework**: Next.js 16 (App Router)
-- **Real-time**: Socket.IO
-- **Database**: PostgreSQL + Prisma
-- **Auth**: NextAuth.js
-- **Styling**: Tailwind CSS v4 + FKS Design System
-- **Deploy**: Docker Compose (on-premise)
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
----
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Dokumentasi
+## Deploy on Vercel
 
-Design spec lengkap ada di repo **Ideax** (workspace brainstorming FKS):
-`docs/superpowers/specs/2026-03-23-fks-quizlive-design.md`
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
----
-
-## Status
-
-🚧 **Dalam tahap desain** — Spec selesai, implementasi akan segera dimulai.
-
----
-
-*Bagian dari FKS (Firmansyah Knowledge Suite) — koleksi developer tools internal.*
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
